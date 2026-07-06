@@ -1,0 +1,159 @@
+@import "tailwindcss";
+
+@theme inline {
+  /* StratCanvas palette — light theme, electric purple accent */
+  --color-strat-bg: #ffffff;
+  --color-strat-bg2: #fbfaff;
+  --color-strat-bg3: #f3effc;
+  --color-strat-surface: #ffffff;
+  --color-strat-text: #1a1523;
+  --color-strat-muted: #6b6478;
+  --color-strat-accent: #9333ea;
+  --color-strat-accent2: #7c3aed;
+  --color-strat-accent3: #ea580c;
+  --color-strat-gold: #b45309;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-outfit), system-ui, sans-serif;
+  --font-mono: var(--font-dm-mono), ui-monospace, monospace;
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #1a1523;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-outfit), system-ui, sans-serif;
+  }
+  body {
+    @apply bg-background text-foreground font-light;
+    font-family: var(--font-outfit), system-ui, sans-serif;
+    background-image:
+      linear-gradient(rgba(147, 51, 234, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(147, 51, 234, 0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .font-mono,
+  code,
+  kbd,
+  pre,
+  samp {
+    font-family: var(--font-dm-mono), ui-monospace, monospace;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+.substack-content {
+  font-family: var(--font-outfit), system-ui, sans-serif;
+  font-weight: 300;
+  font-size: 1rem;
+  line-height: 1.75;
+  color: var(--color-strat-muted);
+}
+
+.substack-content p {
+  margin-top: 1.25em;
+  margin-bottom: 1.25em;
+}
+
+.substack-content p:first-child {
+  margin-top: 0;
+}
+
+.substack-content h1,
+.substack-content h2,
+.substack-content h3,
+.substack-content h4 {
+  margin-top: 2em;
+  margin-bottom: 0.6em;
+  font-weight: 700;
+  color: var(--color-strat-text);
+}
+
+.substack-content h1 {
+  font-size: 1.5rem;
+}
+
+.substack-content h2 {
+  font-size: 1.3rem;
+}
+
+.substack-content h3 {
+  font-size: 1.1rem;
+}
+
+.substack-content a {
+  color: var(--color-strat-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.substack-content strong {
+  font-weight: 600;
+  color: var(--color-strat-text);
+}
+
+.substack-content ul,
+.substack-content ol {
+  margin-top: 1.25em;
+  margin-bottom: 1.25em;
+  padding-left: 1.5em;
+}
+
+.substack-content li {
+  margin-top: 0.4em;
+}
+
+.substack-content ul {
+  list-style-type: disc;
+}
+
+.substack-content ol {
+  list-style-type: decimal;
+}
+
+.substack-content blockquote {
+  margin: 1.5em 0;
+  padding-left: 1.25em;
+  border-left: 2px solid var(--color-strat-accent);
+  color: var(--color-strat-text);
+  font-style: italic;
+}
+
+.substack-content hr {
+  margin: 2em 0;
+  border: none;
+  border-top: 1px solid rgb(0 0 0 / 0.1);
+}
+
+.substack-content img {
+  margin: 1.5em 0;
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.75rem;
+}
+
+.substack-content pre,
+.substack-content code {
+  font-family: var(--font-dm-mono), ui-monospace, monospace;
+  font-size: 0.875em;
+}
+
+.substack-content pre {
+  margin: 1.5em 0;
+  padding: 1em;
+  overflow-x: auto;
+  border-radius: 0.75rem;
+  background: var(--color-strat-bg3);
+}
