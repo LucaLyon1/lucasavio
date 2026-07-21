@@ -1,24 +1,18 @@
 import type { Metadata } from "next";
-import { Outfit, DM_Mono } from "next/font/google";
+import { Source_Serif_4 } from "next/font/google";
 import Nav from "@/components/nav";
 import "./globals.css";
 
-const outfit = Outfit({
-  variable: "--font-outfit",
+const sourceSerif = Source_Serif_4({
+  variable: "--font-source-serif",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-});
-
-const dmMono = DM_Mono({
-  variable: "--font-dm-mono",
-  subsets: ["latin"],
-  weight: ["300", "400", "500"],
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
 });
 
 export const metadata: Metadata = {
-  title: "Luca Savio — Quantitative Research & Trading",
-  description:
-    "Financial modeler turned quant: real backtests, a live paper-traded strategy, and the code behind them.",
+  title: "Luca Savio",
+  description: "Essays and notes, cross-posted from Substack.",
 };
 
 export default function RootLayout({
@@ -27,7 +21,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${outfit.variable} ${dmMono.variable}`}>
+    <html lang="en" className={sourceSerif.variable}>
       <body className="antialiased">
         <Nav />
         <main>{children}</main>

@@ -1,47 +1,34 @@
 @import "tailwindcss";
 
 @theme inline {
-  /* StratCanvas palette — light theme, electric purple accent */
-  --color-strat-bg: #ffffff;
-  --color-strat-bg2: #fbfaff;
-  --color-strat-bg3: #f3effc;
-  --color-strat-surface: #ffffff;
-  --color-strat-text: #1a1523;
-  --color-strat-muted: #6b6478;
-  --color-strat-accent: #9333ea;
-  --color-strat-accent2: #7c3aed;
-  --color-strat-accent3: #ea580c;
-  --color-strat-gold: #b45309;
+  /* Warm, reading-first palette */
+  --color-bg: #faf9f6;
+  --color-ink: #1c1a17;
+  --color-muted: #706a61;
+  --color-border: #e5e1d8;
+  --color-accent: #b5502f;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-outfit), system-ui, sans-serif;
-  --font-mono: var(--font-dm-mono), ui-monospace, monospace;
+  --font-serif: var(--font-source-serif), Georgia, "Times New Roman", serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
 }
 
 :root {
-  --background: #ffffff;
-  --foreground: #1a1523;
+  --background: #faf9f6;
+  --foreground: #1c1a17;
 }
 
 @layer base {
   html {
-    font-family: var(--font-outfit), system-ui, sans-serif;
+    font-family: var(--font-serif);
   }
   body {
-    @apply bg-background text-foreground font-light;
-    font-family: var(--font-outfit), system-ui, sans-serif;
-    background-image:
-      linear-gradient(rgba(147, 51, 234, 0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(147, 51, 234, 0.04) 1px, transparent 1px);
-    background-size: 48px 48px;
+    @apply bg-background text-foreground;
+    font-family: var(--font-serif);
   }
-  .font-mono,
-  code,
-  kbd,
-  pre,
-  samp {
-    font-family: var(--font-dm-mono), ui-monospace, monospace;
+  .font-sans {
+    font-family: var(--font-sans);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -55,16 +42,15 @@
 }
 
 .substack-content {
-  font-family: var(--font-outfit), system-ui, sans-serif;
-  font-weight: 300;
-  font-size: 1rem;
+  font-family: var(--font-serif);
+  font-size: 1.125rem;
   line-height: 1.75;
-  color: var(--color-strat-muted);
+  color: var(--color-ink);
 }
 
 .substack-content p {
-  margin-top: 1.25em;
-  margin-bottom: 1.25em;
+  margin-top: 1.4em;
+  margin-bottom: 1.4em;
 }
 
 .substack-content p:first-child {
@@ -77,37 +63,36 @@
 .substack-content h4 {
   margin-top: 2em;
   margin-bottom: 0.6em;
-  font-weight: 700;
-  color: var(--color-strat-text);
+  font-weight: 600;
+  color: var(--color-ink);
 }
 
 .substack-content h1 {
-  font-size: 1.5rem;
+  font-size: 1.6rem;
 }
 
 .substack-content h2 {
-  font-size: 1.3rem;
+  font-size: 1.35rem;
 }
 
 .substack-content h3 {
-  font-size: 1.1rem;
+  font-size: 1.15rem;
 }
 
 .substack-content a {
-  color: var(--color-strat-accent);
+  color: var(--color-accent);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 
 .substack-content strong {
-  font-weight: 600;
-  color: var(--color-strat-text);
+  font-weight: 700;
 }
 
 .substack-content ul,
 .substack-content ol {
-  margin-top: 1.25em;
-  margin-bottom: 1.25em;
+  margin-top: 1.4em;
+  margin-bottom: 1.4em;
   padding-left: 1.5em;
 }
 
@@ -124,36 +109,36 @@
 }
 
 .substack-content blockquote {
-  margin: 1.5em 0;
+  margin: 1.6em 0;
   padding-left: 1.25em;
-  border-left: 2px solid var(--color-strat-accent);
-  color: var(--color-strat-text);
+  border-left: 2px solid var(--color-border);
+  color: var(--color-muted);
   font-style: italic;
 }
 
 .substack-content hr {
-  margin: 2em 0;
+  margin: 2.5em 0;
   border: none;
-  border-top: 1px solid rgb(0 0 0 / 0.1);
+  border-top: 1px solid var(--color-border);
 }
 
 .substack-content img {
-  margin: 1.5em 0;
+  margin: 1.75em 0;
   max-width: 100%;
   height: auto;
-  border-radius: 0.75rem;
+  border-radius: 0.375rem;
 }
 
 .substack-content pre,
 .substack-content code {
-  font-family: var(--font-dm-mono), ui-monospace, monospace;
-  font-size: 0.875em;
+  font-family: ui-monospace, monospace;
+  font-size: 0.85em;
 }
 
 .substack-content pre {
-  margin: 1.5em 0;
+  margin: 1.75em 0;
   padding: 1em;
   overflow-x: auto;
-  border-radius: 0.75rem;
-  background: var(--color-strat-bg3);
+  border-radius: 0.5rem;
+  background: var(--color-border);
 }

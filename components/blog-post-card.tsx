@@ -11,15 +11,15 @@ export default function BlogPostCard({ slug, title, excerpt, date }: BlogPostCar
   return (
     <Link
       href={`/blog/${slug}`}
-      className="group block rounded-2xl border border-black/13 bg-strat-bg3 p-7 transition-colors hover:border-strat-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-strat-accent"
+      className="group block border-b border-border py-8 first:pt-0 last:border-b-0"
     >
-      <div className="mb-4 font-mono text-xs uppercase tracking-widest text-strat-muted">
+      <div className="mb-2 font-sans text-xs uppercase tracking-widest text-muted">
         {date}
       </div>
-      <h3 className="mb-2 font-sans text-lg font-semibold text-strat-text group-hover:text-strat-accent">
+      <h2 className="font-serif text-2xl font-semibold text-ink group-hover:text-accent">
         {title}
-      </h3>
-      <p className="font-sans text-sm font-light text-strat-muted">{excerpt}</p>
+      </h2>
+      <p className="mt-2 font-serif text-base text-muted">{excerpt}</p>
     </Link>
   );
 }
