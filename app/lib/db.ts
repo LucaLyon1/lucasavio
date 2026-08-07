@@ -9,30 +9,65 @@ declare global {
   var __dbPromise: Promise<Database> | undefined;
 }
 
+// Append-only. Never edit or remove a past migration — add a new one instead,
+// so it applies cleanly to databases that already ran the earlier ones.
+const migrations: { name: string; up: (db: Database) => void }[] = [
+  {
+    // Uses IF NOT EXISTS (unlike later migrations) because it must apply cleanly
+    // to databases created before this migration system existed.
+    name: "001_init",
+    up: (db) => {
+      db.run(`
+        CREATE TABLE IF NOT EXISTS stocks (
+          ticker TEXT PRIMARY KEY,
+          shares REAL NOT NULL,
+          avg_cost REAL NOT NULL
+        );
+      `);
+      db.run(`
+        CREATE TABLE IF NOT EXISTS books (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          title TEXT NOT NULL,
+          author TEXT NOT NULL,
+          photo TEXT,
+          summary TEXT,
+          grade REAL NOT NULL,
+          review TEXT
+        );
+      `);
+    },
+  },
+];
+
+function runMigrations(db: Database): boolean {
+  db.run(`
+    CREATE TABLE IF NOT EXISTS migrations (
+      name TEXT PRIMARY KEY,
+      applied_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+  `);
+
+  const applied = new Set(
+    rowsToObjects<{ name: string }>(db.exec("SELECT name FROM migrations")).map((row) => row.name),
+  );
+
+  let didWork = false;
+  for (const migration of migrations) {
+    if (applied.has(migration.name)) continue;
+    migration.up(db);
+    db.run("INSERT INTO migrations (name) VALUES (?)", [migration.name]);
+    didWork = true;
+  }
+  return didWork;
+}
+
 async function loadDatabase(): Promise<Database> {
   const SQL = await initSqlJs({ locateFile: (file) => path.join(WASM_DIR, file) });
 
   const fileBuffer = await readFile(DB_PATH).catch(() => undefined);
   const db = new SQL.Database(fileBuffer);
 
-  db.run(`
-    CREATE TABLE IF NOT EXISTS stocks (
-      ticker TEXT PRIMARY KEY,
-      shares REAL NOT NULL,
-      avg_cost REAL NOT NULL
-    );
-    CREATE TABLE IF NOT EXISTS books (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      title TEXT NOT NULL,
-      author TEXT NOT NULL,
-      photo TEXT,
-      summary TEXT,
-      grade REAL NOT NULL,
-      review TEXT
-    );
-  `);
-
-  if (!fileBuffer) {
+  if (runMigrations(db)) {
     await writeFile(DB_PATH, Buffer.from(db.export()));
   }
 
