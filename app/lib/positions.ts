@@ -79,3 +79,22 @@ export async function addPosition(stock: Stock): Promise<void> {
   }
   await persist();
 }
+
+export async function updatePosition(
+  ticker: string,
+  updates: { shares: number; avgCost: number },
+): Promise<void> {
+  const db = await getDb();
+  db.run("UPDATE stocks SET shares = ?, avg_cost = ? WHERE ticker = ?", [
+    updates.shares,
+    updates.avgCost,
+    ticker,
+  ]);
+  await persist();
+}
+
+export async function deletePosition(ticker: string): Promise<void> {
+  const db = await getDb();
+  db.run("DELETE FROM stocks WHERE ticker = ?", [ticker]);
+  await persist();
+}

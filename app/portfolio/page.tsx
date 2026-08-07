@@ -18,7 +18,7 @@ export default async function PortfolioPage() {
     <div className="mx-auto max-w-300 px-6 pt-16 pb-20 sm:pt-20 sm:pb-28">
       <SectionHeading label="Portfolio" title="Live positions" />
 
-      <PositionsTable positions={positions} />
+      <PositionsTable positions={positions} editable={authed} />
 
       <p className="mt-4 text-xs text-ink/50">
         Prices are fetched live; up to a minute delayed.
