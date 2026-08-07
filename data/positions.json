@@ -1,7 +1,0 @@
-[
-  { "ticker": "VTI", "shares": 42, "avgCost": 218.4, "last": 261.12 },
-  { "ticker": "VXUS", "shares": 120, "avgCost": 54.1, "last": 61.87 },
-  { "ticker": "BND", "shares": 65, "avgCost": 72.9, "last": 70.15 },
-  { "ticker": "AAPL", "shares": 18, "avgCost": 165.2, "last": 231.44 },
-  { "ticker": "MSFT", "shares": 9, "avgCost": 340.75, "last": 421.03 }
-]

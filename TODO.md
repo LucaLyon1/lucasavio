@@ -5,3 +5,4 @@
 - Improve design (later)
 - Add real CI/CD
 - Add unique credentials for security
+- Change the favicon

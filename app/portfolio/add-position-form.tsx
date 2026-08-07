@@ -16,6 +16,9 @@ export default function AddPositionForm() {
   return (
     <Card className="p-6">
       <h3 className="text-sm font-semibold text-ink">Add a position</h3>
+      <p className="mt-1 text-xs text-ink/50">
+        Company name, logo, and live price are fetched automatically from the ticker.
+      </p>
       <form action={formAction} className="mt-4 grid gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor="ticker" className={labelClasses}>
@@ -45,7 +48,7 @@ export default function AddPositionForm() {
             className={inputClasses}
           />
         </div>
-        <div>
+        <div className="sm:col-span-2">
           <label htmlFor="avgCost" className={labelClasses}>
             Avg cost
           </label>
@@ -57,21 +60,6 @@ export default function AddPositionForm() {
             min="0"
             required
             placeholder="150.00"
-            className={inputClasses}
-          />
-        </div>
-        <div>
-          <label htmlFor="last" className={labelClasses}>
-            Current price
-          </label>
-          <input
-            id="last"
-            name="last"
-            type="number"
-            step="0.01"
-            min="0"
-            required
-            placeholder="180.00"
             className={inputClasses}
           />
         </div>

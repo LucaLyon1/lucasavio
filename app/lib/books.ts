@@ -1,20 +1,29 @@
-import { readStore, writeStore } from "./store";
-
-const FILE = "books.json";
+import { getDb, persist, rowsToObjects } from "./db";
 
 export type Book = {
+  id: number;
   title: string;
   author: string;
-  category: string;
-  rating: number;
+  photo: string | null;
+  summary: string | null;
+  grade: number;
+  review: string | null;
 };
 
+export type NewBook = Omit<Book, "id">;
+
 export async function getBooks(): Promise<Book[]> {
-  return readStore<Book>(FILE);
+  const db = await getDb();
+  return rowsToObjects<Book>(
+    db.exec("SELECT id, title, author, photo, summary, grade, review FROM books ORDER BY id DESC"),
+  );
 }
 
-export async function addBook(book: Book): Promise<void> {
-  const books = await readStore<Book>(FILE);
-  books.push(book);
-  await writeStore(FILE, books);
+export async function addBook(book: NewBook): Promise<void> {
+  const db = await getDb();
+  db.run(
+    "INSERT INTO books (title, author, photo, summary, grade, review) VALUES (?, ?, ?, ?, ?, ?)",
+    [book.title, book.author, book.photo, book.summary, book.grade, book.review],
+  );
+  await persist();
 }

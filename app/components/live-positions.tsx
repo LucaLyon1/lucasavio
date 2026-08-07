@@ -1,12 +1,12 @@
 import SectionHeading from "./section-heading";
 import Button from "./button";
 import PositionsTable from "./positions-table";
-import type { PositionWithPerformance } from "../lib/positions";
+import type { StockWithPerformance } from "../lib/positions";
 
 export default function LivePositions({
   positions,
 }: {
-  positions: PositionWithPerformance[];
+  positions: StockWithPerformance[];
 }) {
   return (
     <section className="mx-auto max-w-300 px-6 pt-16 sm:pt-20">
@@ -15,8 +15,7 @@ export default function LivePositions({
       <PositionsTable positions={positions} />
 
       <p className="mt-4 text-xs text-ink/50">
-        Placeholder data pending a live brokerage feed. Figures are illustrative, not real
-        holdings.
+        Prices are fetched live; up to a minute delayed.
       </p>
 
       <div className="mt-6">

@@ -11,17 +11,25 @@ export async function addBookAction(
 ): Promise<BookFormState> {
   const title = String(formData.get("title") ?? "").trim();
   const author = String(formData.get("author") ?? "").trim();
-  const category = String(formData.get("category") ?? "").trim();
-  const rating = Number(formData.get("rating"));
+  const photo = String(formData.get("photo") ?? "").trim();
+  const summary = String(formData.get("summary") ?? "").trim();
+  const review = String(formData.get("review") ?? "").trim();
+  const grade = Number(formData.get("grade"));
 
   if (!title) return { error: "Title is required." };
   if (!author) return { error: "Author is required." };
-  if (!category) return { error: "Category is required." };
-  if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
-    return { error: "Rating must be between 1 and 5." };
+  if (!Number.isFinite(grade) || grade < 0 || grade > 10) {
+    return { error: "Grade must be between 0 and 10." };
   }
 
-  await addBook({ title, author, category, rating });
+  await addBook({
+    title,
+    author,
+    photo: photo || null,
+    summary: summary || null,
+    grade,
+    review: review || null,
+  });
   revalidatePath("/books");
   revalidatePath("/");
 

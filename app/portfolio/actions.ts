@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { addPosition } from "../lib/positions";
+import { getQuote } from "../lib/market-data";
 
 export type PositionFormState = { error?: string };
 
@@ -12,7 +13,6 @@ export async function addPositionAction(
   const ticker = String(formData.get("ticker") ?? "").trim().toUpperCase();
   const shares = Number(formData.get("shares"));
   const avgCost = Number(formData.get("avgCost"));
-  const last = Number(formData.get("last"));
 
   if (!ticker) return { error: "Ticker is required." };
   if (!Number.isFinite(shares) || shares <= 0) {
@@ -21,11 +21,16 @@ export async function addPositionAction(
   if (!Number.isFinite(avgCost) || avgCost <= 0) {
     return { error: "Average cost must be a positive number." };
   }
-  if (!Number.isFinite(last) || last <= 0) {
-    return { error: "Current price must be a positive number." };
+
+  const quote = await getQuote(ticker);
+  if (!quote) return { error: `Could not find a quote for "${ticker}". Check the ticker.` };
+
+  try {
+    await addPosition({ ticker, shares, avgCost });
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "Failed to add position." };
   }
 
-  await addPosition({ ticker, shares, avgCost, last });
   revalidatePath("/portfolio");
   revalidatePath("/");
 

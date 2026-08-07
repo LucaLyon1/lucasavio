@@ -42,28 +42,56 @@ export default function AddBookForm() {
           />
         </div>
         <div>
-          <label htmlFor="category" className={labelClasses}>
-            Category
+          <label htmlFor="grade" className={labelClasses}>
+            Grade (out of 10)
           </label>
           <input
-            id="category"
-            name="category"
+            id="grade"
+            name="grade"
+            type="number"
+            step="0.5"
+            min="0"
+            max="10"
             required
-            placeholder="Investing"
+            placeholder="8.5"
             className={inputClasses}
           />
         </div>
-        <div>
-          <label htmlFor="rating" className={labelClasses}>
-            Rating
+        <div className="sm:col-span-2">
+          <label htmlFor="photo" className={labelClasses}>
+            Cover photo URL
           </label>
-          <select id="rating" name="rating" required defaultValue="5" className={inputClasses}>
-            {[5, 4, 3, 2, 1].map((value) => (
-              <option key={value} value={value}>
-                {value} star{value === 1 ? "" : "s"}
-              </option>
-            ))}
-          </select>
+          <input
+            id="photo"
+            name="photo"
+            type="url"
+            placeholder="https://covers.openlibrary.org/b/isbn/..."
+            className={inputClasses}
+          />
+        </div>
+        <div className="sm:col-span-2">
+          <label htmlFor="summary" className={labelClasses}>
+            Quick summary
+          </label>
+          <textarea
+            id="summary"
+            name="summary"
+            rows={2}
+            placeholder="What the book is about, in a sentence or two."
+            className={inputClasses}
+          />
+        </div>
+        <div className="sm:col-span-2">
+          <label htmlFor="review" className={labelClasses}>
+            Review / analysis
+          </label>
+          <textarea
+            id="review"
+            name="review"
+            rows={4}
+            placeholder="Your full take on it."
+            className={inputClasses}
+          />
         </div>
 
         {state.error ? <p className="text-sm text-red-600 sm:col-span-2">{state.error}</p> : null}

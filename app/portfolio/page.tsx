@@ -18,8 +18,7 @@ export default async function PortfolioPage() {
       <PositionsTable positions={positions} />
 
       <p className="mt-4 text-xs text-ink/50">
-        Placeholder data pending a live brokerage feed. Figures are illustrative, not real
-        holdings.
+        Prices are fetched live; up to a minute delayed.
       </p>
 
       <div className="mt-12 max-w-xl">
