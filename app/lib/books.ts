@@ -19,6 +19,14 @@ export async function getBooks(): Promise<Book[]> {
   );
 }
 
+export async function getBook(id: number): Promise<Book | null> {
+  const db = await getDb();
+  const [book] = rowsToObjects<Book>(
+    db.exec("SELECT id, title, author, photo, summary, grade, review FROM books WHERE id = ?", [id]),
+  );
+  return book ?? null;
+}
+
 export async function addBook(book: NewBook): Promise<void> {
   const db = await getDb();
   db.run(

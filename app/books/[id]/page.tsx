@@ -1,0 +1,76 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import Card from "../../components/card";
+import FallbackImage from "../../components/fallback-image";
+import SectionHeading from "../../components/section-heading";
+import { getBook } from "../../lib/books";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const book = Number.isFinite(Number(id)) ? await getBook(Number(id)) : null;
+  return { title: book ? `${book.title} — Luca Savio` : "Book not found — Luca Savio" };
+}
+
+export default async function BookPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const numericId = Number(id);
+  const book = Number.isFinite(numericId) ? await getBook(numericId) : null;
+
+  if (!book) notFound();
+
+  return (
+    <div className="mx-auto max-w-300 px-6 pt-16 pb-20 sm:pt-20 sm:pb-28">
+      <Link
+        href="/books"
+        className="text-xs font-semibold uppercase tracking-wide text-ink/30 transition-colors hover:text-ink/50"
+      >
+        ← All books
+      </Link>
+
+      <div className="mt-6">
+        <SectionHeading label="Book" title={book.title} />
+      </div>
+
+      <Card className="grid gap-6 p-6 sm:grid-cols-[auto_1fr] sm:p-8">
+        {book.photo ? (
+          <FallbackImage
+            src={book.photo}
+            alt=""
+            className="h-56 w-40 shrink-0 rounded-lg object-cover"
+          />
+        ) : null}
+        <div>
+          <p className="text-sm text-ink/50">{book.author}</p>
+          <p className="mt-1 text-sm font-semibold text-primary-700">
+            {book.grade.toFixed(1)}
+            <span className="font-normal text-ink/40">/10</span>
+          </p>
+
+          {book.summary ? (
+            <p className="mt-4 whitespace-pre-line text-sm text-ink/70">{book.summary}</p>
+          ) : null}
+
+          {book.review ? (
+            <div className="mt-6 border-t border-border pt-6">
+              <p className="text-xs font-semibold uppercase tracking-wide text-ink/50">
+                Review
+              </p>
+              <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-ink/80">
+                {book.review}
+              </p>
+            </div>
+          ) : null}
+        </div>
+      </Card>
+    </div>
+  );
+}

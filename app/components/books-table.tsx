@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Card from "./card";
 import FallbackImage from "./fallback-image";
 import type { Book } from "../lib/books";
@@ -27,8 +28,16 @@ export default function BooksTable({ books }: { books: Book[] }) {
             </tr>
           ) : (
             books.map((book) => (
-              <tr key={book.id} className="border-b border-border last:border-b-0">
+              <tr
+                key={book.id}
+                className="relative border-b border-border last:border-b-0 hover:bg-primary/5"
+              >
                 <td className="px-6 py-3">
+                  <Link
+                    href={`/books/${book.id}`}
+                    className="absolute inset-0"
+                    aria-label={`${book.title} by ${book.author}`}
+                  />
                   <div className="flex items-center gap-3">
                     {book.photo ? (
                       <FallbackImage
@@ -44,7 +53,11 @@ export default function BooksTable({ books }: { books: Book[] }) {
                   </div>
                 </td>
                 <td className="max-w-xs px-6 py-3 text-sm text-ink/70">
-                  {book.summary ?? <span className="text-ink/30">—</span>}
+                  {book.summary ? (
+                    <span className="line-clamp-2">{book.summary}</span>
+                  ) : (
+                    <span className="text-ink/30">—</span>
+                  )}
                 </td>
                 <td className="tabular-nums px-6 py-3 text-sm font-semibold text-primary-700">
                   {book.grade.toFixed(1)}

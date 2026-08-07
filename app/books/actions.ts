@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { addBook } from "../lib/books";
+import { lookupBook, searchBooks, type BookSuggestion } from "../lib/google-books";
 import { isAuthenticated } from "../lib/auth";
 
 export type BookFormState = { error?: string };
@@ -27,11 +28,20 @@ export async function addBookAction(
     return { error: "Grade must be between 0 and 10." };
   }
 
+  let photoToSave = photo || null;
+  let summaryToSave = summary || null;
+
+  if (!photoToSave || !summaryToSave) {
+    const lookup = await lookupBook(title, author);
+    photoToSave ??= lookup?.photo ?? null;
+    summaryToSave ??= lookup?.summary ?? null;
+  }
+
   await addBook({
     title,
     author,
-    photo: photo || null,
-    summary: summary || null,
+    photo: photoToSave,
+    summary: summaryToSave,
     grade,
     review: review || null,
   });
@@ -39,4 +49,9 @@ export async function addBookAction(
   revalidatePath("/");
 
   return {};
+}
+
+export async function searchBooksAction(query: string): Promise<BookSuggestion[]> {
+  if (!(await isAuthenticated())) return [];
+  return searchBooks(query);
 }
