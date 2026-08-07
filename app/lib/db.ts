@@ -49,6 +49,15 @@ const migrations: { name: string; up: (db: Database) => void }[] = [
       db.run(`ALTER TABLE stocks ADD COLUMN price_updated_at TEXT;`);
     },
   },
+  {
+    // Native trading currency of the quote (e.g. USD, GBP, CAD). Prices and
+    // cost basis are stored in this currency; the portfolio totals convert to
+    // USD via live FX rates. Defaults to USD for rows added before this column.
+    name: "003_currency",
+    up: (db) => {
+      db.run(`ALTER TABLE stocks ADD COLUMN currency TEXT NOT NULL DEFAULT 'USD';`);
+    },
+  },
 ];
 
 function runMigrations(db: Database): boolean {

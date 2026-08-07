@@ -13,6 +13,15 @@ import {
 const formatUsd = (value: number) =>
   value.toLocaleString("en-US", { style: "currency", currency: "USD" });
 
+const formatNative = (value: number, currency: string) => {
+  try {
+    return value.toLocaleString("en-US", { style: "currency", currency });
+  } catch {
+    // Unknown currency code — fall back to a plain number with the code appended.
+    return `${value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${currency}`;
+  }
+};
+
 const inputClasses =
   "w-full rounded-lg border border-border bg-bg px-2 py-1.5 text-sm text-ink focus:border-primary-600 focus:outline-none";
 const labelClasses = "text-xs font-semibold uppercase tracking-wide text-ink/50";
@@ -254,7 +263,10 @@ export default function PositionsTable({
                       </div>
                     </td>
                     <td className="tabular-nums px-6 py-3 text-sm text-ink/80">
-                      {formatUsd(position.price)}
+                      {formatNative(position.price, position.currency)}
+                      {position.currency !== "USD" ? (
+                        <span className="ml-1 text-xs text-ink/40">{position.currency}</span>
+                      ) : null}
                     </td>
                     <td className="tabular-nums px-6 py-3 text-sm text-ink/80">
                       {formatUsd(position.positionSize)}

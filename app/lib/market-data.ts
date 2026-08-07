@@ -2,6 +2,7 @@ export type Quote = {
   price: number;
   previousClose: number;
   name: string;
+  currency: string;
 };
 
 type YahooChartResponse = {
@@ -37,17 +38,40 @@ export async function getQuote(ticker: string): Promise<Quote | null> {
     // Yahoo quotes some London-listed stocks in pence (currency "GBp"),
     // not pounds. Normalize to the major unit so P&L against a GBP cost basis
     // is correct. GBp = pence; divide by 100 to get GBP.
-    const penceToPounds = meta.currency === "GBp" ? 100 : 1;
+    const isPence = meta.currency === "GBp";
+    const scale = isPence ? 100 : 1;
+    const currency = isPence ? "GBP" : (meta.currency ?? "USD");
 
-    const price = meta.regularMarketPrice / penceToPounds;
+    const price = meta.regularMarketPrice / scale;
     const previousClose =
-      (meta.chartPreviousClose ?? meta.previousClose ?? meta.regularMarketPrice) / penceToPounds;
+      (meta.chartPreviousClose ?? meta.previousClose ?? meta.regularMarketPrice) / scale;
     const name = meta.longName ?? meta.shortName ?? ticker;
 
-    return { price, previousClose, name };
+    return { price, previousClose, name, currency };
   } catch {
     return null;
   }
+}
+
+/**
+ * Live FX rates expressed as "USD per 1 unit of the currency" (e.g. GBP -> ~1.27).
+ * USD maps to 1. Unknown/failed lookups fall back to 1 so the app degrades to
+ * treating the amount as USD rather than crashing.
+ */
+export async function getUsdRates(currencies: string[]): Promise<Record<string, number>> {
+  const unique = Array.from(new Set(currencies.map((c) => c.toUpperCase())));
+  const rates: Record<string, number> = { USD: 1 };
+
+  await Promise.all(
+    unique
+      .filter((c) => c !== "USD")
+      .map(async (currency) => {
+        const quote = await getQuote(`${currency}USD=X`);
+        rates[currency] = quote?.price && quote.price > 0 ? quote.price : 1;
+      }),
+  );
+
+  return rates;
 }
 
 export function getLogoUrl(ticker: string): string {

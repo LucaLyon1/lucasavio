@@ -38,6 +38,7 @@ export async function addPositionAction(
       price: quote.price,
       previousClose: quote.previousClose,
       fullName: quote.name,
+      currency: quote.currency,
     });
   } catch (error) {
     return { error: error instanceof Error ? error.message : "Failed to add position." };
@@ -79,6 +80,7 @@ export async function updatePositionAction(
       price: quote.price,
       previousClose: quote.previousClose,
       fullName: quote.name,
+      currency: quote.currency,
     });
   } catch (error) {
     return { error: error instanceof Error ? error.message : "Failed to update position." };

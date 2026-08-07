@@ -1,5 +1,5 @@
 import { getDb, persist, rowsToObjects } from "./db";
-import { getQuote, getLogoUrl } from "./market-data";
+import { getQuote, getLogoUrl, getUsdRates } from "./market-data";
 
 export type Stock = {
   ticker: string;
@@ -12,17 +12,19 @@ type CachedStock = Stock & {
   prevClose: number | null;
   fullName: string | null;
   priceUpdatedAt: string | null;
+  currency: string;
 };
 
 export type StockWithPerformance = Stock & {
   fullName: string;
   logo: string;
-  price: number;
-  positionSize: number;
+  currency: string; // native trading currency (for price display)
+  price: number; // in native currency
+  positionSize: number; // converted to USD
   portfolioPct: number;
-  dailyPnl: number;
+  dailyPnl: number; // USD
   dailyPnlPct: number;
-  totalPnl: number;
+  totalPnl: number; // USD
   totalPnlPct: number;
 };
 
@@ -34,13 +36,14 @@ type StockRow = {
   prev_close: number | null;
   full_name: string | null;
   price_updated_at: string | null;
+  currency: string | null;
 };
 
 async function getStocks(): Promise<CachedStock[]> {
   const db = await getDb();
   const rows = rowsToObjects<StockRow>(
     db.exec(
-      "SELECT ticker, shares, avg_cost, last_price, prev_close, full_name, price_updated_at FROM stocks ORDER BY ticker",
+      "SELECT ticker, shares, avg_cost, last_price, prev_close, full_name, price_updated_at, currency FROM stocks ORDER BY ticker",
     ),
   );
   return rows.map((row) => ({
@@ -51,20 +54,24 @@ async function getStocks(): Promise<CachedStock[]> {
     prevClose: row.prev_close,
     fullName: row.full_name,
     priceUpdatedAt: row.price_updated_at,
+    currency: row.currency ?? "USD",
   }));
 }
 
 export async function getPositions(): Promise<StockWithPerformance[]> {
   const stocks = await getStocks();
+  const rates = await getUsdRates(stocks.map((s) => s.currency));
 
   const withPrices = stocks.map((stock) => {
     const price = stock.lastPrice ?? stock.avgCost;
     const previousClose = stock.prevClose ?? price;
     const fullName = stock.fullName ?? stock.ticker;
+    const fx = rates[stock.currency.toUpperCase()] ?? 1; // USD per 1 unit of currency
 
-    const positionSize = stock.shares * price;
-    const dailyPnl = stock.shares * (price - previousClose);
-    const totalPnl = stock.shares * (price - stock.avgCost);
+    // Money amounts converted to USD so the portfolio total is meaningful.
+    const positionSize = stock.shares * price * fx;
+    const dailyPnl = stock.shares * (price - previousClose) * fx;
+    const totalPnl = stock.shares * (price - stock.avgCost) * fx;
 
     return {
       ticker: stock.ticker,
@@ -72,9 +79,11 @@ export async function getPositions(): Promise<StockWithPerformance[]> {
       avgCost: stock.avgCost,
       fullName,
       logo: getLogoUrl(stock.ticker),
-      price,
+      currency: stock.currency,
+      price, // native currency, for the Price column
       positionSize,
       dailyPnl,
+      // Percentages are currency-agnostic (ratio of same-currency values).
       dailyPnlPct: previousClose ? ((price - previousClose) / previousClose) * 100 : 0,
       totalPnl,
       totalPnlPct: stock.avgCost ? ((price - stock.avgCost) / stock.avgCost) * 100 : 0,
@@ -106,13 +115,26 @@ export function describePricesAsOf(raw: string | null): string {
 }
 
 export async function addPosition(
-  stock: Stock & { price: number; previousClose: number; fullName: string },
+  stock: Stock & {
+    price: number;
+    previousClose: number;
+    fullName: string;
+    currency: string;
+  },
 ): Promise<void> {
   const db = await getDb();
   try {
     db.run(
-      "INSERT INTO stocks (ticker, shares, avg_cost, last_price, prev_close, full_name, price_updated_at) VALUES (?, ?, ?, ?, ?, ?, datetime('now'))",
-      [stock.ticker, stock.shares, stock.avgCost, stock.price, stock.previousClose, stock.fullName],
+      "INSERT INTO stocks (ticker, shares, avg_cost, last_price, prev_close, full_name, currency, price_updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))",
+      [
+        stock.ticker,
+        stock.shares,
+        stock.avgCost,
+        stock.price,
+        stock.previousClose,
+        stock.fullName,
+        stock.currency,
+      ],
     );
   } catch (error) {
     if (error instanceof Error && error.message.includes("UNIQUE constraint failed")) {
@@ -125,12 +147,27 @@ export async function addPosition(
 
 export async function updatePosition(
   ticker: string,
-  updates: { shares: number; avgCost: number; price: number; previousClose: number; fullName: string },
+  updates: {
+    shares: number;
+    avgCost: number;
+    price: number;
+    previousClose: number;
+    fullName: string;
+    currency: string;
+  },
 ): Promise<void> {
   const db = await getDb();
   db.run(
-    "UPDATE stocks SET shares = ?, avg_cost = ?, last_price = ?, prev_close = ?, full_name = ?, price_updated_at = datetime('now') WHERE ticker = ?",
-    [updates.shares, updates.avgCost, updates.price, updates.previousClose, updates.fullName, ticker],
+    "UPDATE stocks SET shares = ?, avg_cost = ?, last_price = ?, prev_close = ?, full_name = ?, currency = ?, price_updated_at = datetime('now') WHERE ticker = ?",
+    [
+      updates.shares,
+      updates.avgCost,
+      updates.price,
+      updates.previousClose,
+      updates.fullName,
+      updates.currency,
+      ticker,
+    ],
   );
   await persist();
 }
@@ -158,8 +195,8 @@ export async function refreshAllPrices(): Promise<{ updated: string[]; failed: s
       continue;
     }
     db.run(
-      "UPDATE stocks SET last_price = ?, prev_close = ?, full_name = ?, price_updated_at = datetime('now') WHERE ticker = ?",
-      [quote.price, quote.previousClose, quote.name, ticker],
+      "UPDATE stocks SET last_price = ?, prev_close = ?, full_name = ?, currency = ?, price_updated_at = datetime('now') WHERE ticker = ?",
+      [quote.price, quote.previousClose, quote.name, quote.currency, ticker],
     );
     updated.push(ticker);
   }
