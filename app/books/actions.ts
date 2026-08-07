@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { addBook } from "../lib/books";
+import { isAuthenticated } from "../lib/auth";
 
 export type BookFormState = { error?: string };
 
@@ -9,6 +10,10 @@ export async function addBookAction(
   _prevState: BookFormState,
   formData: FormData,
 ): Promise<BookFormState> {
+  if (!(await isAuthenticated())) {
+    return { error: "You must be signed in to do that." };
+  }
+
   const title = String(formData.get("title") ?? "").trim();
   const author = String(formData.get("author") ?? "").trim();
   const photo = String(formData.get("photo") ?? "").trim();

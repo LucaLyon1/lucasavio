@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { addPosition } from "../lib/positions";
 import { getQuote } from "../lib/market-data";
+import { isAuthenticated } from "../lib/auth";
 
 export type PositionFormState = { error?: string };
 
@@ -10,6 +11,10 @@ export async function addPositionAction(
   _prevState: PositionFormState,
   formData: FormData,
 ): Promise<PositionFormState> {
+  if (!(await isAuthenticated())) {
+    return { error: "You must be signed in to do that." };
+  }
+
   const ticker = String(formData.get("ticker") ?? "").trim().toUpperCase();
   const shares = Number(formData.get("shares"));
   const avgCost = Number(formData.get("avgCost"));
