@@ -69,8 +69,17 @@ export async function updatePositionAction(
     return { error: "Average cost must be a positive number." };
   }
 
+  const quote = await getQuote(ticker);
+  if (!quote) return { error: `Could not find a quote for "${ticker}". Check the ticker.` };
+
   try {
-    await updatePosition(ticker, { shares, avgCost });
+    await updatePosition(ticker, {
+      shares,
+      avgCost,
+      price: quote.price,
+      previousClose: quote.previousClose,
+      fullName: quote.name,
+    });
   } catch (error) {
     return { error: error instanceof Error ? error.message : "Failed to update position." };
   }

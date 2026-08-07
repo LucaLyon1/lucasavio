@@ -125,14 +125,13 @@ export async function addPosition(
 
 export async function updatePosition(
   ticker: string,
-  updates: { shares: number; avgCost: number },
+  updates: { shares: number; avgCost: number; price: number; previousClose: number; fullName: string },
 ): Promise<void> {
   const db = await getDb();
-  db.run("UPDATE stocks SET shares = ?, avg_cost = ? WHERE ticker = ?", [
-    updates.shares,
-    updates.avgCost,
-    ticker,
-  ]);
+  db.run(
+    "UPDATE stocks SET shares = ?, avg_cost = ?, last_price = ?, prev_close = ?, full_name = ?, price_updated_at = datetime('now') WHERE ticker = ?",
+    [updates.shares, updates.avgCost, updates.price, updates.previousClose, updates.fullName, ticker],
+  );
   await persist();
 }
 
