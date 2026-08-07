@@ -31,7 +31,14 @@ export async function addPositionAction(
   if (!quote) return { error: `Could not find a quote for "${ticker}". Check the ticker.` };
 
   try {
-    await addPosition({ ticker, shares, avgCost });
+    await addPosition({
+      ticker,
+      shares,
+      avgCost,
+      price: quote.price,
+      previousClose: quote.previousClose,
+      fullName: quote.name,
+    });
   } catch (error) {
     return { error: error instanceof Error ? error.message : "Failed to add position." };
   }

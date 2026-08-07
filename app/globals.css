@@ -12,6 +12,9 @@
   --color-primary-600: color-mix(in srgb, var(--color-primary) 75%, black);
   --color-primary-700: color-mix(in srgb, var(--color-primary) 55%, black);
 
+  --color-gain: #006300;
+  --color-loss: #d03b3b;
+
   --font-sans: "Neue Haas Grotesk Display", var(--font-inter), ui-sans-serif,
     -apple-system, "Helvetica Neue", Arial, sans-serif;
 }

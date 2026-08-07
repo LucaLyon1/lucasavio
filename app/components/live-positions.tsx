@@ -1,22 +1,22 @@
 import SectionHeading from "./section-heading";
 import Button from "./button";
 import PositionsTable from "./positions-table";
-import type { StockWithPerformance } from "../lib/positions";
+import { describePricesAsOf, type StockWithPerformance } from "../lib/positions";
 
 export default function LivePositions({
   positions,
+  pricesAsOf,
 }: {
   positions: StockWithPerformance[];
+  pricesAsOf: string | null;
 }) {
   return (
     <section className="mx-auto max-w-300 px-6 pt-16 sm:pt-20">
       <SectionHeading label="Live positions" />
 
-      <PositionsTable positions={positions} />
+      <PositionsTable positions={positions} showTotal={false} />
 
-      <p className="mt-4 text-xs text-ink/50">
-        Prices are fetched live; up to a minute delayed.
-      </p>
+      <p className="mt-4 text-xs text-ink/50">{describePricesAsOf(pricesAsOf)}</p>
 
       <div className="mt-6">
         <Button href="/portfolio" variant="ghost">

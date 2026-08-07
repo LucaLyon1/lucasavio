@@ -37,6 +37,18 @@ const migrations: { name: string; up: (db: Database) => void }[] = [
       `);
     },
   },
+  {
+    // Cached close price, so the portfolio page reads from the DB instead of
+    // hitting the Yahoo Finance API on every request. Populated at add-time
+    // and refreshed by the market-close job (see app/api/refresh-prices).
+    name: "002_price_cache",
+    up: (db) => {
+      db.run(`ALTER TABLE stocks ADD COLUMN last_price REAL;`);
+      db.run(`ALTER TABLE stocks ADD COLUMN prev_close REAL;`);
+      db.run(`ALTER TABLE stocks ADD COLUMN full_name TEXT;`);
+      db.run(`ALTER TABLE stocks ADD COLUMN price_updated_at TEXT;`);
+    },
+  },
 ];
 
 function runMigrations(db: Database): boolean {

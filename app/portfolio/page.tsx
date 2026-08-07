@@ -4,7 +4,7 @@ import SectionHeading from "../components/section-heading";
 import PositionsTable from "../components/positions-table";
 import AddPositionForm from "./add-position-form";
 import LogoutButton from "../login/logout-button";
-import { getPositions } from "../lib/positions";
+import { getPositions, getPricesAsOf, describePricesAsOf } from "../lib/positions";
 import { isAuthenticated } from "../lib/auth";
 
 export const metadata: Metadata = {
@@ -12,7 +12,11 @@ export const metadata: Metadata = {
 };
 
 export default async function PortfolioPage() {
-  const [positions, authed] = await Promise.all([getPositions(), isAuthenticated()]);
+  const [positions, pricesAsOf, authed] = await Promise.all([
+    getPositions(),
+    getPricesAsOf(),
+    isAuthenticated(),
+  ]);
 
   return (
     <div className="mx-auto max-w-300 px-6 pt-16 pb-20 sm:pt-20 sm:pb-28">
@@ -20,9 +24,7 @@ export default async function PortfolioPage() {
 
       <PositionsTable positions={positions} editable={authed} />
 
-      <p className="mt-4 text-xs text-ink/50">
-        Prices are fetched live; up to a minute delayed.
-      </p>
+      <p className="mt-4 text-xs text-ink/50">{describePricesAsOf(pricesAsOf)}</p>
 
       <div className="mt-12 max-w-xl">
         {authed ? (

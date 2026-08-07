@@ -24,12 +24,12 @@ function PnlCell({ value, pct }: { value: number; pct: number }) {
   return (
     <td
       className={`tabular-nums px-6 py-3 text-sm font-semibold ${
-        positive ? "text-primary-700" : "text-ink/60"
+        positive ? "text-gain" : "text-loss"
       }`}
     >
       {positive ? "+" : ""}
       {formatUsd(value)}
-      <span className="ml-1 font-normal text-ink/40">
+      <span className="ml-1 font-normal opacity-70">
         ({positive ? "+" : ""}
         {pct.toFixed(1)}%)
       </span>
@@ -138,9 +138,11 @@ function EditPositionRow({
 export default function PositionsTable({
   positions,
   editable = false,
+  showTotal = true,
 }: {
   positions: StockWithPerformance[];
   editable?: boolean;
+  showTotal?: boolean;
 }) {
   const [editingTicker, setEditingTicker] = useState<string | null>(null);
 
@@ -246,7 +248,7 @@ export default function PositionsTable({
               )
             )}
           </tbody>
-          {positions.length > 0 ? (
+          {showTotal && positions.length > 0 ? (
             <tfoot>
               <tr className="border-t border-border bg-ink/3 font-semibold">
                 <td className="px-6 py-3 text-sm text-ink">Total</td>
