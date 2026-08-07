@@ -2,9 +2,9 @@ import SectionHeading from "./section-heading";
 import Button from "./button";
 
 const links = [
-  { label: "Email", href: "mailto:hello@lucasavio.com" },
-  { label: "LinkedIn", href: "https://linkedin.com" },
-  { label: "GitHub", href: "https://github.com" },
+  { label: "Email", href: "mailto:savioluca2@gmail.com" },
+  { label: "LinkedIn", href: "https://www.linkedin.com/in/luca-savio1/" },
+  { label: "GitHub", href: "https://github.com/LucaLyon1/lucasavio" },
 ];
 
 export default function Contact() {

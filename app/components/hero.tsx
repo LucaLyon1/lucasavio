@@ -2,7 +2,7 @@ import Button from "./button";
 
 export default function Hero() {
   return (
-    <section id="top" className="mx-auto max-w-300 px-6 pt-20 pb-16 sm:pt-28 sm:pb-24">
+    <section className="mx-auto max-w-300 px-6 pt-20 pb-16 sm:pt-28 sm:pb-24">
       <p className="text-sm font-semibold uppercase tracking-wide text-primary-700">
         Investor · Engineer · Writer
       </p>
@@ -14,10 +14,10 @@ export default function Hero() {
         along the way.
       </p>
       <div className="mt-8 flex flex-wrap gap-4">
-        <Button href="#portfolio" variant="primary">
+        <Button href="/portfolio" variant="primary">
           View portfolio
         </Button>
-        <Button href="#articles" variant="secondary">
+        <Button href="/articles" variant="secondary">
           Read articles
         </Button>
       </div>
