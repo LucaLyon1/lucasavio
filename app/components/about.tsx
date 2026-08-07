@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Card from "./card";
 import SectionHeading from "./section-heading";
 
@@ -7,12 +8,14 @@ export default function About() {
       <SectionHeading label="About" />
 
       <div className="grid gap-10 md:grid-cols-[minmax(0,320px)_1fr] md:items-start">
-        <Card className="aspect-4/5 w-full overflow-hidden bg-surface">
-          <div className="flex h-full items-center justify-center">
-            <span className="text-xs font-semibold uppercase tracking-wide text-ink/40">
-              Photo
-            </span>
-          </div>
+        <Card className="relative aspect-4/5 w-full overflow-hidden bg-surface">
+          <Image
+            src="/IMG_9530.jpg"
+            alt="Luca Savio"
+            fill
+            sizes="(min-width: 768px) 320px, 100vw"
+            className="object-cover"
+          />
         </Card>
 
         <div className="max-w-xl">
