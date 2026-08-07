@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useMemo, useState } from "react";
 import Card from "./card";
 import FallbackImage from "./fallback-image";
 import type { StockWithPerformance } from "../lib/positions";
@@ -18,6 +18,18 @@ const inputClasses =
 const labelClasses = "text-xs font-semibold uppercase tracking-wide text-ink/50";
 
 const initialState: PositionFormState = {};
+
+type SortKey = "ticker" | "price" | "positionSize" | "portfolioPct" | "dailyPnl" | "totalPnl";
+type SortState = { key: SortKey; direction: "asc" | "desc" };
+
+const columns: { key: SortKey; label: string }[] = [
+  { key: "ticker", label: "Stock" },
+  { key: "price", label: "Price" },
+  { key: "positionSize", label: "Position size" },
+  { key: "portfolioPct", label: "% of portfolio" },
+  { key: "dailyPnl", label: "Daily P&L" },
+  { key: "totalPnl", label: "Total P&L" },
+];
 
 function PnlCell({ value, pct }: { value: number; pct: number }) {
   const positive = value >= 0;
@@ -145,6 +157,7 @@ export default function PositionsTable({
   showTotal?: boolean;
 }) {
   const [editingTicker, setEditingTicker] = useState<string | null>(null);
+  const [sort, setSort] = useState<SortState | null>(null);
 
   const totalPositionSize = positions.reduce((sum, p) => sum + p.positionSize, 0);
   const totalDailyPnl = positions.reduce((sum, p) => sum + p.dailyPnl, 0);
@@ -154,15 +167,23 @@ export default function PositionsTable({
   const totalDailyPnlPct = totalPreviousValue ? (totalDailyPnl / totalPreviousValue) * 100 : 0;
   const totalPnlPct = totalCostBasis ? (totalPnl / totalCostBasis) * 100 : 0;
 
-  const headings = [
-    "Stock",
-    "Price",
-    "Position size",
-    "% of portfolio",
-    "Daily P&L",
-    "Total P&L",
-    ...(editable ? ["Actions"] : []),
-  ];
+  const sortedPositions = useMemo(() => {
+    if (!sort) return positions;
+    const sorted = [...positions].sort((a, b) =>
+      sort.key === "ticker" ? a.ticker.localeCompare(b.ticker) : a[sort.key] - b[sort.key],
+    );
+    return sort.direction === "asc" ? sorted : sorted.reverse();
+  }, [positions, sort]);
+
+  function toggleSort(key: SortKey) {
+    setSort((prev) =>
+      prev?.key === key
+        ? { key, direction: prev.direction === "asc" ? "desc" : "asc" }
+        : { key, direction: "asc" },
+    );
+  }
+
+  const columnCount = columns.length + (editable ? 1 : 0);
 
   return (
     <Card>
@@ -177,30 +198,44 @@ export default function PositionsTable({
         <table className="w-full min-w-220 border-collapse text-left">
           <thead>
             <tr className="border-b border-border">
-              {headings.map((heading) => (
+              {columns.map((column) => (
                 <th
-                  key={heading}
+                  key={column.key}
                   className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-ink/50"
                 >
-                  {heading}
+                  <button
+                    type="button"
+                    onClick={() => toggleSort(column.key)}
+                    className="flex items-center gap-1 transition-colors hover:text-ink"
+                  >
+                    {column.label}
+                    {sort?.key === column.key ? (
+                      <span aria-hidden="true">{sort.direction === "asc" ? "↑" : "↓"}</span>
+                    ) : null}
+                  </button>
                 </th>
               ))}
+              {editable ? (
+                <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-ink/50">
+                  Actions
+                </th>
+              ) : null}
             </tr>
           </thead>
           <tbody>
             {positions.length === 0 ? (
               <tr>
-                <td colSpan={headings.length} className="px-6 py-6 text-sm text-ink/50">
+                <td colSpan={columnCount} className="px-6 py-6 text-sm text-ink/50">
                   No positions yet.
                 </td>
               </tr>
             ) : (
-              positions.map((position) =>
+              sortedPositions.map((position) =>
                 editable && editingTicker === position.ticker ? (
                   <EditPositionRow
                     key={position.ticker}
                     position={position}
-                    colSpan={headings.length}
+                    colSpan={columnCount}
                     onDone={() => setEditingTicker(null)}
                   />
                 ) : (
