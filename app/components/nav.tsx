@@ -27,7 +27,7 @@ export default function Nav() {
             </Link>
           ))}
         </nav>
-        <Button href="/Luca%20Savio-vf-1.pdf" target="_blank" download variant="primary">
+        <Button href="/Luca%20Savio-BA.pdf" target="_blank" download variant="primary">
           Resume
         </Button>
       </div>
