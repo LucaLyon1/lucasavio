@@ -198,9 +198,7 @@ export default function PositionsTable({
     <Card>
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-6 py-4">
         <p className="text-sm font-semibold text-ink">Live positions</p>
-        <span className="rounded-full bg-primary-100 px-3 py-1 text-xs font-semibold text-primary-700">
-          Live market data
-        </span>
+        <span className="text-xs text-ink/50">Refreshed daily after US market close</span>
       </div>
 
       <div className="overflow-x-auto">
