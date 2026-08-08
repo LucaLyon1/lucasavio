@@ -18,6 +18,10 @@ export default async function BooksPage() {
     <div className="mx-auto max-w-300 px-6 pt-16 pb-20 sm:pt-20 sm:pb-28">
       <SectionHeading label="Books" title="Books read" />
 
+      <p className="-mt-4 mb-8 text-sm text-ink/50">
+        Click on a book to get my full analysis of it.
+      </p>
+
       <BooksTable books={books} />
 
       <div className="mt-12 max-w-xl">

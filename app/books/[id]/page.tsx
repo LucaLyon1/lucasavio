@@ -4,7 +4,9 @@ import { notFound } from "next/navigation";
 import Card from "../../components/card";
 import FallbackImage from "../../components/fallback-image";
 import SectionHeading from "../../components/section-heading";
+import BookReview from "./book-review";
 import { getBook } from "../../lib/books";
+import { isAuthenticated } from "../../lib/auth";
 
 export async function generateMetadata({
   params,
@@ -23,7 +25,10 @@ export default async function BookPage({
 }) {
   const { id } = await params;
   const numericId = Number(id);
-  const book = Number.isFinite(numericId) ? await getBook(numericId) : null;
+  const [book, authed] = await Promise.all([
+    Number.isFinite(numericId) ? getBook(numericId) : Promise.resolve(null),
+    isAuthenticated(),
+  ]);
 
   if (!book) notFound();
 
@@ -50,25 +55,12 @@ export default async function BookPage({
         ) : null}
         <div>
           <p className="text-sm text-ink/50">{book.author}</p>
-          <p className="mt-1 text-sm font-semibold text-primary-700">
-            {book.grade.toFixed(1)}
-            <span className="font-normal text-ink/40">/10</span>
-          </p>
 
           {book.summary ? (
             <p className="mt-4 whitespace-pre-line text-sm text-ink/70">{book.summary}</p>
           ) : null}
 
-          {book.review ? (
-            <div className="mt-6 border-t border-border pt-6">
-              <p className="text-xs font-semibold uppercase tracking-wide text-ink/50">
-                Review
-              </p>
-              <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-ink/80">
-                {book.review}
-              </p>
-            </div>
-          ) : null}
+          <BookReview book={book} editable={authed} />
         </div>
       </Card>
     </div>

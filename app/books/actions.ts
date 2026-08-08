@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { addBook } from "../lib/books";
+import { addBook, updateBookReview } from "../lib/books";
 import { lookupBook, searchBooks, type BookSuggestion } from "../lib/google-books";
 import { isAuthenticated } from "../lib/auth";
 
@@ -45,6 +45,31 @@ export async function addBookAction(
     grade,
     review: review || null,
   });
+  revalidatePath("/books");
+  revalidatePath("/");
+
+  return {};
+}
+
+export async function updateBookReviewAction(
+  _prevState: BookFormState,
+  formData: FormData,
+): Promise<BookFormState> {
+  if (!(await isAuthenticated())) {
+    return { error: "You must be signed in to do that." };
+  }
+
+  const id = Number(formData.get("id"));
+  const review = String(formData.get("review") ?? "").trim();
+  const grade = Number(formData.get("grade"));
+
+  if (!Number.isFinite(id)) return { error: "Invalid book." };
+  if (!Number.isFinite(grade) || grade < 0 || grade > 10) {
+    return { error: "Grade must be between 0 and 10." };
+  }
+
+  await updateBookReview(id, { grade, review: review || null });
+  revalidatePath(`/books/${id}`);
   revalidatePath("/books");
   revalidatePath("/");
 

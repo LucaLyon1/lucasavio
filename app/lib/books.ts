@@ -35,3 +35,16 @@ export async function addBook(book: NewBook): Promise<void> {
   );
   await persist();
 }
+
+export async function updateBookReview(
+  id: number,
+  updates: { grade: number; review: string | null },
+): Promise<void> {
+  const db = await getDb();
+  db.run("UPDATE books SET grade = ?, review = ? WHERE id = ?", [
+    updates.grade,
+    updates.review,
+    id,
+  ]);
+  await persist();
+}
