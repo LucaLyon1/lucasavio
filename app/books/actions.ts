@@ -77,6 +77,7 @@ export async function updateBookReviewAction(
 
   const id = Number(formData.get("id"));
   const review = String(formData.get("review") ?? "").trim();
+  const categories = parseCategoriesInput(String(formData.get("categories") ?? ""));
   const grade = Number(formData.get("grade"));
 
   if (!Number.isFinite(id)) return { error: "Invalid book." };
@@ -84,7 +85,7 @@ export async function updateBookReviewAction(
     return { error: "Grade must be between 0 and 10." };
   }
 
-  await updateBookReview(id, { grade, review: review || null });
+  await updateBookReview(id, { grade, review: review || null, categories });
   revalidatePath(`/books/${id}`);
   revalidatePath("/books");
   revalidatePath("/");

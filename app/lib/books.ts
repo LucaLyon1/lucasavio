@@ -69,12 +69,13 @@ export async function addBook(book: NewBook): Promise<void> {
 
 export async function updateBookReview(
   id: number,
-  updates: { grade: number; review: string | null },
+  updates: { grade: number; review: string | null; categories: string[] },
 ): Promise<void> {
   const db = await getDb();
-  db.run("UPDATE books SET grade = ?, review = ? WHERE id = ?", [
+  db.run("UPDATE books SET grade = ?, review = ?, categories = ? WHERE id = ?", [
     updates.grade,
     updates.review,
+    updates.categories.length ? JSON.stringify(updates.categories) : null,
     id,
   ]);
   await persist();

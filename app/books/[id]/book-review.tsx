@@ -39,6 +39,18 @@ function EditBookReviewForm({ book, onDone }: { book: Book; onDone: () => void }
         />
       </div>
       <div className="mt-4">
+        <label htmlFor="categories" className={labelClasses}>
+          Categories <span className="normal-case text-ink/30">(comma-separated)</span>
+        </label>
+        <input
+          id="categories"
+          name="categories"
+          defaultValue={book.categories.join(", ")}
+          placeholder="Fiction, Thrillers"
+          className={inputClasses}
+        />
+      </div>
+      <div className="mt-4">
         <label htmlFor="review" className={labelClasses}>
           Review / analysis
         </label>
@@ -98,6 +110,19 @@ export default function BookReview({ book, editable }: { book: Book; editable: b
           </button>
         ) : null}
       </div>
+
+      {book.categories.length > 0 ? (
+        <div className="mt-2 flex flex-wrap gap-1">
+          {book.categories.map((category) => (
+            <span
+              key={category}
+              className="rounded-full bg-primary-100 px-2 py-0.5 text-[11px] font-semibold text-primary-700"
+            >
+              {category}
+            </span>
+          ))}
+        </div>
+      ) : null}
 
       {book.review ? (
         <div className="mt-6 border-t border-border pt-6">
