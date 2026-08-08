@@ -58,6 +58,14 @@ const migrations: { name: string; up: (db: Database) => void }[] = [
       db.run(`ALTER TABLE stocks ADD COLUMN currency TEXT NOT NULL DEFAULT 'USD';`);
     },
   },
+  {
+    // Genre/subject tags sourced from the Google Books API, stored as a JSON
+    // array string (e.g. '["Fiction","Thrillers"]'). Null until backfilled.
+    name: "004_book_categories",
+    up: (db) => {
+      db.run(`ALTER TABLE books ADD COLUMN categories TEXT;`);
+    },
+  },
 ];
 
 function runMigrations(db: Database): boolean {

@@ -19,6 +19,7 @@ export default function AddBookForm() {
   const authorRef = useRef<HTMLInputElement>(null);
   const photoRef = useRef<HTMLInputElement>(null);
   const summaryRef = useRef<HTMLTextAreaElement>(null);
+  const categoriesRef = useRef<HTMLInputElement>(null);
 
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<BookSuggestion[]>([]);
@@ -46,6 +47,7 @@ export default function AddBookForm() {
     if (authorRef.current) authorRef.current.value = suggestion.author;
     if (photoRef.current) photoRef.current.value = suggestion.photo ?? "";
     if (summaryRef.current) summaryRef.current.value = suggestion.summary ?? "";
+    if (categoriesRef.current) categoriesRef.current.value = suggestion.categories.join(", ");
     setSuggestions([]);
     setOpen(false);
   }
@@ -157,6 +159,21 @@ export default function AddBookForm() {
             name="summary"
             ref={summaryRef}
             rows={2}
+            placeholder="Leave blank to fetch automatically"
+            className={inputClasses}
+          />
+        </div>
+        <div className="sm:col-span-2">
+          <label htmlFor="categories" className={labelClasses}>
+            Categories{" "}
+            <span className="normal-case text-ink/30">
+              (optional — auto-filled from Google Books, comma-separated)
+            </span>
+          </label>
+          <input
+            id="categories"
+            name="categories"
+            ref={categoriesRef}
             placeholder="Leave blank to fetch automatically"
             className={inputClasses}
           />

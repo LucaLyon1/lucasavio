@@ -1,6 +1,7 @@
 export type BookLookup = {
   photo: string | null;
   summary: string | null;
+  categories: string[];
 };
 
 export type BookSuggestion = {
@@ -8,6 +9,7 @@ export type BookSuggestion = {
   author: string;
   photo: string | null;
   summary: string | null;
+  categories: string[];
 };
 
 type GoogleBooksResponse = {
@@ -16,6 +18,7 @@ type GoogleBooksResponse = {
       title?: string;
       authors?: string[];
       description?: string;
+      categories?: string[];
       imageLinks?: {
         thumbnail?: string;
         smallThumbnail?: string;
@@ -50,6 +53,7 @@ async function queryVolumes(q: string, maxResults: number): Promise<BookSuggesti
           author: info.authors?.join(", ") ?? "",
           photo: thumbnail ? thumbnail.replace(/^http:/, "https:") : null,
           summary: info.description ?? null,
+          categories: info.categories ?? [],
         };
       })
       .filter((suggestion) => suggestion.title);
@@ -61,7 +65,9 @@ async function queryVolumes(q: string, maxResults: number): Promise<BookSuggesti
 export async function lookupBook(title: string, author: string): Promise<BookLookup | null> {
   const query = [`intitle:${title}`, author ? `inauthor:${author}` : null].filter(Boolean).join("+");
   const [match] = await queryVolumes(query, 1);
-  return match ? { photo: match.photo, summary: match.summary } : null;
+  return match
+    ? { photo: match.photo, summary: match.summary, categories: match.categories }
+    : null;
 }
 
 export async function searchBooks(query: string): Promise<BookSuggestion[]> {
