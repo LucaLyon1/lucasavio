@@ -1,6 +1,13 @@
 import Image from "next/image";
 import Card from "./card";
 import SectionHeading from "./section-heading";
+import Button from "./button";
+
+const links = [
+  { label: "LinkedIn", href: "https://www.linkedin.com/in/luca-savio1/", target: "_blank" },
+  { label: "GitHub", href: "https://github.com/LucaLyon1/lucasavio", target: "_blank" },
+  { label: "Email", href: "mailto:savioluca2@gmail.com" },
+];
 
 export default function About() {
   return (
@@ -30,6 +37,17 @@ export default function About() {
             Outside of markets and code, I’m usually at a keyboard, on a trail,
             or three chapters into something I’ll mention below.
           </p>
+
+          <div className="mt-6 flex flex-wrap items-center gap-4">
+            {links.map((link) => (
+              <Button key={link.label} href={link.href} target={link.target} variant="secondary">
+                {link.label}
+              </Button>
+            ))}
+            <Button href="/Luca%20Savio-vf-1.pdf" target="_blank" download variant="primary">
+              Resume
+            </Button>
+          </div>
         </div>
       </div>
     </section>
