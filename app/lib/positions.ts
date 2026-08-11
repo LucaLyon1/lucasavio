@@ -178,27 +178,49 @@ export async function deletePosition(ticker: string): Promise<void> {
   await persist();
 }
 
-/** Refreshes the cached price for every position. Meant to run once daily at US market close. */
+/** Current calendar date in US Eastern time as "YYYY-MM-DD" (America/New_York). */
+export function etDateString(now: Date = new Date()): string {
+  // en-CA locale renders as YYYY-MM-DD; timeZone pins it to the US market day.
+  return now.toLocaleDateString("en-CA", { timeZone: "America/New_York" });
+}
+
+/**
+ * Refreshes cached prices for every position.
+ *
+ * `last_price` updates on every run. `prev_close` is the reference used for
+ * Daily P&L and must stay FIXED for the whole trading day — otherwise the Daily
+ * P&L jumps around when Yahoo's reported previousClose wobbles intraday (notably
+ * for futures like GC=F). So prev_close is only (re)anchored when we cross into a
+ * new ET trading day, tracked via the `prev_close_date` column.
+ */
 export async function refreshAllPrices(): Promise<{ updated: string[]; failed: string[] }> {
   const db = await getDb();
-  const tickers = rowsToObjects<{ ticker: string }>(db.exec("SELECT ticker FROM stocks")).map(
-    (row) => row.ticker,
+  const today = etDateString();
+  const rows = rowsToObjects<{ ticker: string; prev_close: number | null; prev_close_date: string | null }>(
+    db.exec("SELECT ticker, prev_close, prev_close_date FROM stocks"),
   );
 
   const updated: string[] = [];
   const failed: string[] = [];
 
-  for (const ticker of tickers) {
-    const quote = await getQuote(ticker);
+  for (const row of rows) {
+    const quote = await getQuote(row.ticker);
     if (!quote) {
-      failed.push(ticker);
+      failed.push(row.ticker);
       continue;
     }
+
+    // Anchor prev_close once per ET trading day (or if it was never set); hold
+    // it fixed on every subsequent intraday refresh.
+    const needsAnchor = row.prev_close_date !== today || row.prev_close == null;
+    const prevClose = needsAnchor ? quote.previousClose : row.prev_close;
+    const prevCloseDate = needsAnchor ? today : row.prev_close_date;
+
     db.run(
-      "UPDATE stocks SET last_price = ?, prev_close = ?, full_name = ?, currency = ?, price_updated_at = datetime('now') WHERE ticker = ?",
-      [quote.price, quote.previousClose, quote.name, quote.currency, ticker],
+      "UPDATE stocks SET last_price = ?, prev_close = ?, prev_close_date = ?, full_name = ?, currency = ?, price_updated_at = datetime('now') WHERE ticker = ?",
+      [quote.price, prevClose, prevCloseDate, quote.name, quote.currency, row.ticker],
     );
-    updated.push(ticker);
+    updated.push(row.ticker);
   }
 
   await persist();

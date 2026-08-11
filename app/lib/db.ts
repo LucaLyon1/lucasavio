@@ -66,6 +66,17 @@ const migrations: { name: string; up: (db: Database) => void }[] = [
       db.run(`ALTER TABLE books ADD COLUMN categories TEXT;`);
     },
   },
+  {
+    // ET calendar date ("YYYY-MM-DD") on which prev_close was last anchored.
+    // prev_close is captured once per trading day (the prior day's close) and
+    // held fixed; only last_price updates on intraday refreshes. This keeps the
+    // Daily P&L stable instead of jumping when Yahoo's reported previousClose
+    // wobbles intraday (notably for futures like GC=F).
+    name: "005_prev_close_date",
+    up: (db) => {
+      db.run(`ALTER TABLE stocks ADD COLUMN prev_close_date TEXT;`);
+    },
+  },
 ];
 
 function runMigrations(db: Database): boolean {
