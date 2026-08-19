@@ -2,11 +2,13 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Card from "./card";
 import FallbackImage from "./fallback-image";
 import type { Book } from "../lib/books";
 
 export default function BooksTable({ books }: { books: Book[] }) {
+  const router = useRouter();
   const [category, setCategory] = useState<string | null>(null);
 
   const categories = useMemo(
@@ -73,13 +75,15 @@ export default function BooksTable({ books }: { books: Book[] }) {
               filteredBooks.map((book) => (
                 <tr
                   key={book.id}
-                  className="relative border-b border-border last:border-b-0 hover:bg-primary/5"
+                  onClick={() => router.push(`/books/${book.id}`)}
+                  className="cursor-pointer border-b border-border last:border-b-0 hover:bg-primary/5"
                 >
-                  <td className="px-6 py-3">
+                  <td className="relative px-6 py-3">
                     <Link
                       href={`/books/${book.id}`}
                       className="absolute inset-0"
                       aria-label={`${book.title} by ${book.author}`}
+                      onClick={(e) => e.stopPropagation()}
                     />
                     <div className="flex items-center gap-3">
                       {book.photo ? (
