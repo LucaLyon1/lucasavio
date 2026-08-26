@@ -53,27 +53,48 @@ export async function getQuote(ticker: string): Promise<Quote | null> {
   }
 }
 
-/**
- * Live FX rates expressed as "USD per 1 unit of the currency" (e.g. GBP -> ~1.27).
- * USD maps to 1. Unknown/failed lookups fall back to 1 so the app degrades to
- * treating the amount as USD rather than crashing.
- */
-export async function getUsdRates(currencies: string[]): Promise<Record<string, number>> {
-  const unique = Array.from(new Set(currencies.map((c) => c.toUpperCase())));
-  const rates: Record<string, number> = { USD: 1 };
-
-  await Promise.all(
-    unique
-      .filter((c) => c !== "USD")
-      .map(async (currency) => {
-        const quote = await getQuote(`${currency}USD=X`);
-        rates[currency] = quote?.price && quote.price > 0 ? quote.price : 1;
-      }),
-  );
-
-  return rates;
-}
-
 export function getLogoUrl(ticker: string): string {
   return `https://financialmodelingprep.com/image-stock/${encodeURIComponent(ticker.toUpperCase())}.png`;
+}
+
+type WikipediaSummaryResponse = {
+  type?: string;
+  extract?: string;
+};
+
+const SUMMARY_MAX_LENGTH = 220;
+
+/** Truncates to a full sentence (or word) at or before `max` chars, so the card blurb never cuts off mid-word. */
+function truncateSummary(text: string, max: number): string {
+  if (text.length <= max) return text;
+  const truncated = text.slice(0, max);
+  const sentenceEnd = truncated.lastIndexOf(". ");
+  if (sentenceEnd > max * 0.4) return `${truncated.slice(0, sentenceEnd + 1)}`;
+  const wordEnd = truncated.lastIndexOf(" ");
+  return `${truncated.slice(0, wordEnd > 0 ? wordEnd : max)}…`;
+}
+
+/**
+ * Brief company description for the portfolio card, sourced from Wikipedia's
+ * summary API (keyed by company name, not ticker — futures/indices like
+ * "Gold Dec 26" won't have an article and just 404). Returns null if unavailable.
+ */
+export async function getCompanySummary(companyName: string): Promise<string | null> {
+  try {
+    const res = await fetch(
+      `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(companyName.replace(/ /g, "_"))}`,
+      {
+        headers: { "User-Agent": "Mozilla/5.0" },
+        next: { revalidate: 60 * 60 * 24 * 7 },
+      },
+    );
+    if (!res.ok) return null;
+
+    const data = (await res.json()) as WikipediaSummaryResponse;
+    if (data.type === "disambiguation" || !data.extract) return null;
+
+    return truncateSummary(data.extract, SUMMARY_MAX_LENGTH);
+  } catch {
+    return null;
+  }
 }

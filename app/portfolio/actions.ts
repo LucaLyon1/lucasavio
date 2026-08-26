@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { addPosition, deletePosition, updatePosition } from "../lib/positions";
-import { getQuote } from "../lib/market-data";
+import { getQuote, getCompanySummary } from "../lib/market-data";
 import { isAuthenticated } from "../lib/auth";
 
 export type PositionFormState = { error?: string };
@@ -29,6 +29,7 @@ export async function addPositionAction(
 
   const quote = await getQuote(ticker);
   if (!quote) return { error: `Could not find a quote for "${ticker}". Check the ticker.` };
+  const summary = await getCompanySummary(quote.name);
 
   try {
     await addPosition({
@@ -39,6 +40,7 @@ export async function addPositionAction(
       previousClose: quote.previousClose,
       fullName: quote.name,
       currency: quote.currency,
+      summary,
     });
   } catch (error) {
     return { error: error instanceof Error ? error.message : "Failed to add position." };

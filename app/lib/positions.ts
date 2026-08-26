@@ -1,5 +1,5 @@
 import { getDb, persist, rowsToObjects } from "./db";
-import { getQuote, getLogoUrl, getUsdRates } from "./market-data";
+import { getQuote, getLogoUrl, getCompanySummary } from "./market-data";
 
 export type Stock = {
   ticker: string;
@@ -13,20 +13,23 @@ type CachedStock = Stock & {
   fullName: string | null;
   priceUpdatedAt: string | null;
   currency: string;
+  summary: string | null;
 };
 
-export type StockWithPerformance = Stock & {
+// Percentages only — no dollar amounts. Kept separate from EditableStock so
+// the public-facing card data never carries shares/avg cost/position size.
+export type StockWithPerformance = {
+  ticker: string;
   fullName: string;
   logo: string;
-  currency: string; // native trading currency (for price display)
-  price: number; // in native currency
-  positionSize: number; // converted to USD
-  portfolioPct: number;
-  dailyPnl: number; // USD
+  summary: string | null;
   dailyPnlPct: number;
-  totalPnl: number; // USD
   totalPnlPct: number;
 };
+
+// Shares/avg cost, used only to prefill the edit form for the authenticated
+// owner. Never rendered as a dollar figure.
+export type EditableStock = Stock & { currency: string };
 
 type StockRow = {
   ticker: string;
@@ -37,13 +40,14 @@ type StockRow = {
   full_name: string | null;
   price_updated_at: string | null;
   currency: string | null;
+  summary: string | null;
 };
 
 async function getStocks(): Promise<CachedStock[]> {
   const db = await getDb();
   const rows = rowsToObjects<StockRow>(
     db.exec(
-      "SELECT ticker, shares, avg_cost, last_price, prev_close, full_name, price_updated_at, currency FROM stocks ORDER BY ticker",
+      "SELECT ticker, shares, avg_cost, last_price, prev_close, full_name, price_updated_at, currency, summary FROM stocks ORDER BY ticker",
     ),
   );
   return rows.map((row) => ({
@@ -55,46 +59,39 @@ async function getStocks(): Promise<CachedStock[]> {
     fullName: row.full_name,
     priceUpdatedAt: row.price_updated_at,
     currency: row.currency ?? "USD",
+    summary: row.summary,
   }));
 }
 
 export async function getPositions(): Promise<StockWithPerformance[]> {
   const stocks = await getStocks();
-  const rates = await getUsdRates(stocks.map((s) => s.currency));
 
-  const withPrices = stocks.map((stock) => {
+  return stocks.map((stock) => {
     const price = stock.lastPrice ?? stock.avgCost;
     const previousClose = stock.prevClose ?? price;
     const fullName = stock.fullName ?? stock.ticker;
-    const fx = rates[stock.currency.toUpperCase()] ?? 1; // USD per 1 unit of currency
-
-    // Money amounts converted to USD so the portfolio total is meaningful.
-    const positionSize = stock.shares * price * fx;
-    const dailyPnl = stock.shares * (price - previousClose) * fx;
-    const totalPnl = stock.shares * (price - stock.avgCost) * fx;
 
     return {
       ticker: stock.ticker,
-      shares: stock.shares,
-      avgCost: stock.avgCost,
       fullName,
       logo: getLogoUrl(stock.ticker),
-      currency: stock.currency,
-      price, // native currency, for the Price column
-      positionSize,
-      dailyPnl,
-      // Percentages are currency-agnostic (ratio of same-currency values).
+      summary: stock.summary,
+      // Percentages are currency-agnostic (ratio of same-currency values) and
+      // reveal nothing about position size, unlike a dollar P&L would.
       dailyPnlPct: previousClose ? ((price - previousClose) / previousClose) * 100 : 0,
-      totalPnl,
       totalPnlPct: stock.avgCost ? ((price - stock.avgCost) / stock.avgCost) * 100 : 0,
     };
   });
+}
 
-  const totalValue = withPrices.reduce((sum, position) => sum + position.positionSize, 0);
-
-  return withPrices.map((position) => ({
-    ...position,
-    portfolioPct: totalValue ? (position.positionSize / totalValue) * 100 : 0,
+/** Shares/avg cost for the edit form. Only ever fetched for the authenticated owner. */
+export async function getEditableStocks(): Promise<EditableStock[]> {
+  const stocks = await getStocks();
+  return stocks.map(({ ticker, shares, avgCost, currency }) => ({
+    ticker,
+    shares,
+    avgCost,
+    currency,
   }));
 }
 
@@ -120,12 +117,13 @@ export async function addPosition(
     previousClose: number;
     fullName: string;
     currency: string;
+    summary: string | null;
   },
 ): Promise<void> {
   const db = await getDb();
   try {
     db.run(
-      "INSERT INTO stocks (ticker, shares, avg_cost, last_price, prev_close, full_name, currency, price_updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))",
+      "INSERT INTO stocks (ticker, shares, avg_cost, last_price, prev_close, full_name, currency, summary, price_updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))",
       [
         stock.ticker,
         stock.shares,
@@ -134,6 +132,7 @@ export async function addPosition(
         stock.previousClose,
         stock.fullName,
         stock.currency,
+        stock.summary,
       ],
     );
   } catch (error) {
@@ -196,9 +195,12 @@ export function etDateString(now: Date = new Date()): string {
 export async function refreshAllPrices(): Promise<{ updated: string[]; failed: string[] }> {
   const db = await getDb();
   const today = etDateString();
-  const rows = rowsToObjects<{ ticker: string; prev_close: number | null; prev_close_date: string | null }>(
-    db.exec("SELECT ticker, prev_close, prev_close_date FROM stocks"),
-  );
+  const rows = rowsToObjects<{
+    ticker: string;
+    prev_close: number | null;
+    prev_close_date: string | null;
+    summary: string | null;
+  }>(db.exec("SELECT ticker, prev_close, prev_close_date, summary FROM stocks"));
 
   const updated: string[] = [];
   const failed: string[] = [];
@@ -216,9 +218,14 @@ export async function refreshAllPrices(): Promise<{ updated: string[]; failed: s
     const prevClose = needsAnchor ? quote.previousClose : row.prev_close;
     const prevCloseDate = needsAnchor ? today : row.prev_close_date;
 
+    // Business summaries rarely change, so only fetch one for rows that don't
+    // have one yet (backfills positions added before this column existed, or
+    // where the fetch failed at add-time) rather than on every refresh.
+    const summary = row.summary ?? (await getCompanySummary(quote.name));
+
     db.run(
-      "UPDATE stocks SET last_price = ?, prev_close = ?, prev_close_date = ?, full_name = ?, currency = ?, price_updated_at = datetime('now') WHERE ticker = ?",
-      [quote.price, prevClose, prevCloseDate, quote.name, quote.currency, row.ticker],
+      "UPDATE stocks SET last_price = ?, prev_close = ?, prev_close_date = ?, full_name = ?, currency = ?, summary = ?, price_updated_at = datetime('now') WHERE ticker = ?",
+      [quote.price, prevClose, prevCloseDate, quote.name, quote.currency, summary, row.ticker],
     );
     updated.push(row.ticker);
   }

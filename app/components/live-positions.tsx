@@ -1,6 +1,6 @@
 import SectionHeading from "./section-heading";
 import Button from "./button";
-import PositionsTable from "./positions-table";
+import PositionCards from "./position-cards";
 import { describePricesAsOf, type StockWithPerformance } from "../lib/positions";
 
 export default function LivePositions({
@@ -14,7 +14,7 @@ export default function LivePositions({
     <section className="mx-auto max-w-300 px-6 pt-16 sm:pt-20">
       <SectionHeading label="Live positions" />
 
-      <PositionsTable positions={positions} showTotal={false} />
+      <PositionCards positions={positions} />
 
       <p className="mt-4 text-xs text-ink/50">{describePricesAsOf(pricesAsOf)}</p>
 

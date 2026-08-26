@@ -77,6 +77,15 @@ const migrations: { name: string; up: (db: Database) => void }[] = [
       db.run(`ALTER TABLE stocks ADD COLUMN prev_close_date TEXT;`);
     },
   },
+  {
+    // Brief company description shown on the portfolio card (replaces dollar
+    // amounts, which shouldn't be public). Sourced from Yahoo's assetProfile
+    // module; null until backfilled by refreshAllPrices.
+    name: "006_summary",
+    up: (db) => {
+      db.run(`ALTER TABLE stocks ADD COLUMN summary TEXT;`);
+    },
+  },
 ];
 
 function runMigrations(db: Database): boolean {

@@ -17,7 +17,7 @@ export default function AddPositionForm() {
     <Card className="p-6">
       <h3 className="text-sm font-semibold text-ink">Add a position</h3>
       <p className="mt-1 text-xs text-ink/50">
-        Company name, logo, and live price are fetched automatically from the ticker.
+        Company name, logo, summary, and live price are fetched automatically from the ticker.
       </p>
       <form action={formAction} className="mt-4 grid gap-4 sm:grid-cols-2">
         <div>
