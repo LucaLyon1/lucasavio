@@ -20,6 +20,7 @@ export default function About() {
             src="/IMG_9530.jpg"
             alt="Luca Savio"
             fill
+            priority
             sizes="(min-width: 768px) 320px, 100vw"
             className="object-cover"
           />
