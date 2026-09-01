@@ -31,12 +31,11 @@ export default function About() {
             I’m a software engineer who spends a good part of every week reading
             10-Ks, backtesting portfolio ideas, and writing about both. This site
             is where I keep a running, honest record: what I hold, what I’m
-            reading, and what I think I’ve learned — with the caveat that most of
-            it will look naive in five years.
+            reading, and what I think I’ve learned.
           </p>
           <p className="mt-4 text-lg leading-relaxed text-ink/70">
-            Outside of markets and code, I’m usually at a keyboard, on a trail,
-            or three chapters into something I’ll mention below.
+            Outside of markets and code, I’m usually at the gym, playing chess,
+            or reading a book to answer a very pressing existential question.
           </p>
 
           <div className="mt-6 flex flex-wrap items-center gap-4">
